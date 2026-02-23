@@ -71,25 +71,29 @@ EOF
 sudo systemctl restart cloudflared
 echo -e "${GREEN}✅ 隧道配置已更新。${NC}"
 
-# --- 第四步：面板家具进场 (Docker 容器 + index.html) ---
+# --- 第四步：面板家具进场 (直接暴露端口版) ---
 echo -e "\n${BLUE}[4/4] 正在搬运“包工头管理面板”家具...${NC}"
 
-# 清理旧容器
+# 1. 清理旧容器
 docker rm -f vps_panel 2>/dev/null
 mkdir -p /root/yinluren_panel
 
-# 下载网页
+# 2. 下载网页
 curl -L https://raw.githubusercontent.com/zhangcaiduo/yinluren/refs/heads/main/index.html -o /root/yinluren_panel/index.html
 
-# 启动面板
+# 3. 启动面板 (注意：这里去掉了 127.0.0.1，让全网可访问)
 docker run -d --name vps_panel \
-  -p 127.0.0.1:9000:80 \
+  -p 9000:80 \
   -v /root/yinluren_panel:/usr/share/nginx/html:ro \
   --restart always \
   nginx:alpine
 
+# 获取本机公网 IP
+IP=$(curl -s4 icanhazip.com)
+
 echo -e "\n${GREEN}===============================================================${NC}"
-echo -e "${CYAN}🎉 恭喜房主，引路人施工完毕！${NC}"
-echo -e "你的管理面板地址：${GREEN}https://$PANEL_DOMAIN${NC}"
-echo -e "${YELLOW}如果页面打不开，请检查 Cloudflare 后台是否添加了 Public Hostname。${NC}"
+echo -e "${CYAN}🎉 恭喜房主，本地施工完毕！${NC}"
+echo -e "你可以通过以下地址直接访问你的管理面板："
+echo -e "${YELLOW}http://$IP:9000${NC}"
+echo -e "\n${RED}注意：如果无法访问，请在你的 VPS 供应商后台放行 9000 端口。${NC}"
 echo -e "${GREEN}===============================================================${NC}"
