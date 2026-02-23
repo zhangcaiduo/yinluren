@@ -1,99 +1,48 @@
 #!/bin/bash
 
 # --- 颜色定义 ---
-RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
-CYAN='\033[0;36m'
+YELLOW='\033[0;33m'
 NC='\033[0m'
 
 clear
+echo -e "${GREEN}============ VPS 包工头 · 引路人 v1.0.2 (IP直连版) ==============${NC}"
 
-# --- 欢迎 Logo ---
-echo -e "${CYAN}"
-echo "   ██████╗  █████╗  ██████╗ ██████╗ ██████╗ ████████╗██╗   ██╗ ██████╗ "
-echo "   ██╔══██╗██╔══██╗██╔═══██╗██╔════╝██╔═══██╗╚══██╔══╝██║   ██║██╔═══██╗"
-echo "   ██████╔╝███████║██║   ██║██║     ██║   ██║   ██║   ██║   ██║██║   ██║"
-echo "   ██╔═══╝ ██╔══██║██║   ██║██║     ██║   ██║   ██║   ██║   ██║██║   ██║"
-echo "   ██║     ██║  ██║╚██████╔╝╚██████╗╚██████╔╝   ██║   ╚██████╔╝╚██████╔╝"
-echo "   ╚═╝     ╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═════╝    ╚═╝    ╚═════╝  ╚═════╝ "
-echo -e "${NC}"
-echo -e "${GREEN}============ VPS 包工头 · 引路人 v1.0.1 (修正版) ==============${NC}"
-echo -e "${BLUE}作者：张财多 | 宗旨：让每一台小鸡都有尊严地装修${NC}"
-echo -e "${GREEN}===============================================================${NC}"
-
-# --- 第一步：地基找平 (Docker) ---
-echo -e "${BLUE}[1/4] 正在清理地基，安装 Docker 环境...${NC}"
+# --- 1. 安装 Docker ---
+echo -e "${BLUE}[1/3] 正在准备 Docker 地基...${NC}"
 if ! command -v docker &> /dev/null; then
     curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh
     systemctl start docker && systemctl enable docker
 else
-    echo -e "${GREEN}✅ 检测到 Docker 已存在。${NC}"
+    echo -e "${GREEN}✅ Docker 已就位。${NC}"
 fi
 
-# --- 第二步：接通总线 (Cloudflare Tunnel) ---
-echo -e "\n${BLUE}[2/4] 正在接通 Cloudflare Tunnel 隧道总线...${NC}"
-
-# 彻底清理旧的 cloudflared 干扰
-sudo systemctl stop cloudflared 2>/dev/null
-sudo cloudflared service uninstall 2>/dev/null
-
-# 重新配置源并安装
-sudo mkdir -p --mode=0755 /usr/share/keyrings
-curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
-echo "deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared jammy main" | sudo tee /etc/apt/sources.list.d/cloudflared.list
-sudo apt-get update
-sudo apt-get install -y cloudflared
-
-read -p "请输入你的 Tunnel Token: " TUNNEL_TOKEN
-if [ -z "$TUNNEL_TOKEN" ]; then
-    echo -e "${RED}错误：Token 不能为空。${NC}"
-    exit 1
-fi
-
-sudo cloudflared service install "$TUNNEL_TOKEN"
-sudo systemctl start cloudflared
-
-# --- 第三步：面板子域名绑定 ---
-echo -e "\n${BLUE}[3/4] 配置管理面板域名...${NC}"
-read -p "请输入管理面板二级域名 (例如 yinluren.example.com): " PANEL_DOMAIN
-
-# 写入配置文件
-sudo mkdir -p /etc/cloudflared
-cat <<EOF | sudo tee /etc/cloudflared/config.yml
-ingress:
-  - hostname: $PANEL_DOMAIN
-    service: http://localhost:9000
-  - service: http_status:404
-EOF
-
-sudo systemctl restart cloudflared
-echo -e "${GREEN}✅ 隧道配置已更新。${NC}"
-
-# --- 第四步：面板家具进场 (直接暴露端口版) ---
-echo -e "\n${BLUE}[4/4] 正在搬运“包工头管理面板”家具...${NC}"
-
-# 1. 清理旧容器
+# --- 2. 准备网页家具 ---
+echo -e "\n${BLUE}[2/3] 正在从 GitHub 搬运黑白看板图纸...${NC}"
 docker rm -f vps_panel 2>/dev/null
 mkdir -p /root/yinluren_panel
 
-# 2. 下载网页
+# 下载你的 index.html
 curl -L https://raw.githubusercontent.com/zhangcaiduo/yinluren/refs/heads/main/index.html -o /root/yinluren_panel/index.html
 
-# 3. 启动面板 (注意：这里去掉了 127.0.0.1，让全网可访问)
+# --- 3. 启动面板 ---
+echo -e "\n${BLUE}[3/3] 正在点亮管理面板...${NC}"
 docker run -d --name vps_panel \
   -p 9000:80 \
   -v /root/yinluren_panel:/usr/share/nginx/html:ro \
   --restart always \
   nginx:alpine
 
-# 获取本机公网 IP
+# 暴力拆除防火墙拦截
+ufw disable 2>/dev/null
+iptables -F
+
+# 获取公网 IP
 IP=$(curl -s4 icanhazip.com)
 
 echo -e "\n${GREEN}===============================================================${NC}"
-echo -e "${CYAN}🎉 恭喜房主，本地施工完毕！${NC}"
-echo -e "你可以通过以下地址直接访问你的管理面板："
+echo -e "🎉 施工完毕！请在浏览器访问以下地址："
 echo -e "${YELLOW}http://$IP:9000${NC}"
-echo -e "\n${RED}注意：如果无法访问，请在你的 VPS 供应商后台放行 9000 端口。${NC}"
+echo -e "\n${BLUE}提示：这是本地直连模式，不消耗 Cloudflare 流量。${NC}"
 echo -e "${GREEN}===============================================================${NC}"
