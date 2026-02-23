@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>包工头管理面板 - 施工中</title>
+    <style>
+        /* 极致黑白配色 */
+        :root {
+            --bg: #ffffff;
+            --text: #000000;
+            --border: #000000;
+            --hover: #f0f0f0;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: "Courier New", Courier, monospace; /* 极客打字机字体 */
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* 顶部导航与 Logo */
+        header {
+            width: 100%;
+            max-width: 800px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .logo-text { font-size: 24px; font-weight: bold; }
+        .version { font-size: 12px; }
+
+        /* 核心看板区 */
+        main {
+            width: 100%;
+            max-width: 800px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        /* 状态卡片设计 */
+        .card {
+            border: 2px solid var(--border);
+            padding: 20px;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .card:hover { background-color: var(--hover); transform: translate(-2px, -2px); box-shadow: 4px 4px 0px #000; }
+
+        .card-title { font-size: 14px; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        .card-value { font-size: 28px; font-weight: bold; }
+        .card-unit { font-size: 12px; margin-left: 5px; }
+
+        /* 包工头插画占位区 */
+        .illustration-container {
+            margin-top: 40px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .boss-img {
+            max-width: 100%;
+            height: auto;
+            border: 1px dashed #ccc; /* 提醒这里放你那张线描图 */
+        }
+
+        .status-bubble {
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px solid var(--border);
+            display: inline-block;
+            background: #fff;
+        }
+
+        /* 底部操作按钮预留 */
+        .actions {
+            margin-top: 50px;
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #000;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        button:hover { background: #333; }
+        button.disabled { background: #ccc; cursor: not-allowed; }
+
+        footer { margin-top: auto; padding: 40px 0 20px; font-size: 10px; color: #666; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-text">ZHANG CAIDUO / 引路人</div>
+        <div class="version">BUILD 2026.02.22</div>
+    </header>
+
+    <main>
+        <div class="card">
+            <div class="card-title">脑力占用 (CPU)</div>
+            <div class="card-value">2.4<span class="card-unit">%</span></div>
+        </div>
+        <div class="card">
+            <div class="card-title">地基载重 (RAM)</div>
+            <div class="card-value">22<span class="card-unit">%</span></div>
+        </div>
+        <div class="card">
+            <div class="card-title">仓库空间 (DISK)</div>
+            <div class="card-value">8.2<span class="card-unit">%</span></div>
+        </div>
+        <div class="card">
+            <div class="card-title">开工多久 (UP)</div>
+            <div class="card-value">14<span class="card-unit">H</span></div>
+        </div>
+    </main>
+
+    <div class="illustration-container">
+        <img src="https://via.placeholder.com/600x400/ffffff/000000?text=[PLACEHOLDER+FOR+YOUR+ARTWORK]" alt="包工头" class="boss-img">
+        <br>
+        <div class="status-bubble">
+            “房主你好，目前地基很稳，没什么大活儿，我先歇会儿。”
+        </div>
+    </div>
+
+    <div class="actions">
+        <button onclick="alert('即将开始地基补强...')">地基加固 (Swap)</button>
+        <button class="disabled">装修家具 (即将上线)</button>
+        <button class="disabled">拆迁办 (即将上线)</button>
+    </div>
+
+    <footer>
+        © 2026 VPS 包工头 - 你的数字领地精装修服务商
+    </footer>
+
+</body>
+</html>
