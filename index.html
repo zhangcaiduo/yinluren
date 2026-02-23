@@ -6,107 +6,24 @@
     <title>包工头管理面板 - 施工中</title>
     <style>
         /* 极致黑白配色 */
-        :root {
-            --bg: #ffffff;
-            --text: #000000;
-            --border: #000000;
-            --hover: #f0f0f0;
-        }
-
-        body {
-            margin: 0;
-            padding: 20px;
-            font-family: "Courier New", Courier, monospace; /* 极客打字机字体 */
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        /* 顶部导航与 Logo */
-        header {
-            width: 100%;
-            max-width: 800px;
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 10px;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-        }
-
+        :root { --bg: #ffffff; --text: #000000; --border: #000000; --hover: #f0f0f0; }
+        body { margin: 0; padding: 20px; font-family: "Courier New", Courier, monospace; background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        header { width: 100%; max-width: 800px; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
         .logo-text { font-size: 24px; font-weight: bold; }
         .version { font-size: 12px; }
-
-        /* 核心看板区 */
-        main {
-            width: 100%;
-            max-width: 800px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 20px;
-        }
-
-        /* 状态卡片设计 */
-        .card {
-            border: 2px solid var(--border);
-            padding: 20px;
-            position: relative;
-            transition: all 0.2s;
-        }
-
+        main { width: 100%; max-width: 800px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; }
+        .card { border: 2px solid var(--border); padding: 20px; position: relative; transition: all 0.2s; box-sizing: border-box; }
         .card:hover { background-color: var(--hover); transform: translate(-2px, -2px); box-shadow: 4px 4px 0px #000; }
-
         .card-title { font-size: 14px; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
         .card-value { font-size: 28px; font-weight: bold; }
         .card-unit { font-size: 12px; margin-left: 5px; }
-
-        /* 包工头插画占位区 */
-        .illustration-container {
-            margin-top: 40px;
-            width: 100%;
-            max-width: 600px;
-            text-align: center;
-        }
-
-        .boss-img {
-            max-width: 100%;
-            height: auto;
-            border: 1px dashed #ccc; /* 提醒这里放你那张线描图 */
-        }
-
-        .status-bubble {
-            margin-top: 15px;
-            padding: 10px;
-            border: 1px solid var(--border);
-            display: inline-block;
-            background: #fff;
-        }
-
-        /* 底部操作按钮预留 */
-        .actions {
-            margin-top: 50px;
-            width: 100%;
-            max-width: 800px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        button {
-            background: #000;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-family: inherit;
-        }
-
+        .illustration-container { margin-top: 40px; width: 100%; max-width: 600px; text-align: center; }
+        .boss-img { max-width: 100%; height: auto; border: 1px dashed #ccc; }
+        .status-bubble { margin-top: 15px; padding: 10px; border: 1px solid var(--border); display: inline-block; background: #fff; }
+        .actions { margin-top: 50px; width: 100%; max-width: 800px; display: flex; gap: 10px; flex-wrap: wrap; }
+        button { background: #000; color: #fff; border: none; padding: 10px 20px; cursor: pointer; font-family: inherit; }
         button:hover { background: #333; }
         button.disabled { background: #ccc; cursor: not-allowed; }
-
         footer { margin-top: auto; padding: 40px 0 20px; font-size: 10px; color: #666; }
     </style>
 </head>
@@ -114,69 +31,29 @@
 
     <header>
         <div class="logo-text">ZHANG CAIDUO / 引路人</div>
-        <div class="version">BUILD 2026.02.22</div>
+        <div class="version">BUILD 2026.02.23</div>
     </header>
 
     <main>
-        <div class="card">
-            <div class="card-title">脑力占用 (CPU)</div>
-            <div class="card-value">2.4<span class="card-unit">%</span></div>
-        </div>
-        <div class="card">
-            <div class="card-title">地基载重 (RAM)</div>
-            <div class="card-value">22<span class="card-unit">%</span></div>
-        </div>
-        <div class="card">
-            <div class="card-title">仓库空间 (DISK)</div>
-            <div class="card-value">8.2<span class="card-unit">%</span></div>
-        </div>
-        <div class="card">
-            <div class="card-title">开工多久 (UP)</div>
-            <div class="card-value">14<span class="card-unit">H</span></div>
-        </div>
+        <div class="card"><div class="card-title">脑力占用 (CPU)</div><div class="card-value" id="val-cpu">--<span class="card-unit">%</span></div></div>
+        <div class="card"><div class="card-title">地基载重 (RAM)</div><div class="card-value" id="val-ram">--<span class="card-unit">%</span></div></div>
+        <div class="card"><div class="card-title">仓库空间 (DISK)</div><div class="card-value" id="val-disk">--<span class="card-unit">%</span></div></div>
+        <div class="card"><div class="card-title">开工多久 (UP)</div><div class="card-value" id="val-uptime">--<span class="card-unit">H</span></div></div>
     </main>
-<div class="card" style="width: 100%; max-width: 800px; margin-top: 20px; text-align: center; box-sizing: border-box;">
-        <div class="card-title" style="font-size: 18px;">🔗 隧道引水工程 (Cloudflare Tunnel)</div>
+
+    <div class="card" style="width: 100%; max-width: 800px; margin-top: 30px; text-align: center;">
+        <div class="card-title" style="font-size: 18px; border: none;">🔗 隧道引水工程 (Cloudflare Tunnel)</div>
         <p style="font-size: 12px; color: #666; margin-bottom: 15px;">如果你想让面板拥有安全的 https 域名，请在此填入 Token 打通暗道</p>
-        
         <input type="text" id="cf-token" placeholder="粘贴你的 eyJhIj... 开头的 Token" style="width: 80%; padding: 12px; border: 2px solid var(--border); font-family: inherit; margin-bottom: 15px; outline: none;">
         <br>
         <button id="btn-tunnel" onclick="submitToken()" style="font-size: 16px; padding: 12px 30px;">⚡ 一键打通隧道</button>
-        
         <div id="tunnel-status" style="margin-top: 15px; font-size: 14px; font-weight: bold;"></div>
     </div>
 
-    <script>
-        // 这是一个假的提交动作，为了让你先看到视觉效果
-        function submitToken() {
-            const token = document.getElementById('cf-token').value;
-            const statusDiv = document.getElementById('tunnel-status');
-            const btn = document.getElementById('btn-tunnel');
-            
-            if(!token) { 
-                statusDiv.style.color = 'red';
-                statusDiv.innerText = '❌ 房主，Token 不能为空啊！'; 
-                return; 
-            }
-            
-            btn.innerText = '施工中...';
-            btn.classList.add('disabled');
-            statusDiv.style.color = '#000';
-            statusDiv.innerText = '👷 包工头正在努力刨土，准备对接 Cloudflare... (这只是前端演示，缺少后端支持)';
-            
-            // 模拟 2 秒后恢复
-            setTimeout(() => {
-                btn.innerText = '⚡ 一键打通隧道';
-                btn.classList.remove('disabled');
-            }, 3000);
-        }
-    </script>
     <div class="illustration-container">
         <img src="https://via.placeholder.com/600x400/ffffff/000000?text=[PLACEHOLDER+FOR+YOUR+ARTWORK]" alt="包工头" class="boss-img">
         <br>
-        <div class="status-bubble">
-            “房主你好，目前地基很稳，没什么大活儿，我先歇会儿。”
-        </div>
+        <div class="status-bubble">“房主你好，目前地基很稳，没什么大活儿，我先歇会儿。”</div>
     </div>
 
     <div class="actions">
@@ -185,29 +62,59 @@
         <button class="disabled">拆迁办 (即将上线)</button>
     </div>
 
-    <footer>
-        © 2026 VPS 包工头 - 你的数字领地精装修服务商
-    </footer>
-<script>
+    <footer>© 2026 VPS 包工头 - 你的数字领地精装修服务商</footer>
+
+    <script>
+        // 1. 自动刷新系统状态
         function updateStats() {
-            // 去同级目录下寻找 data.json 文件
             fetch('data.json')
                 .then(response => response.json())
                 .then(data => {
-                    // 把拿到的数据填进对应的卡片里
-                    document.querySelectorAll('.card-value')[0].innerHTML = data.cpu + '<span class="card-unit">%</span>';
-                    document.querySelectorAll('.card-value')[1].innerHTML = data.ram + '<span class="card-unit">%</span>';
-                    document.querySelectorAll('.card-value')[2].innerHTML = data.disk + '<span class="card-unit">%</span>';
-                    document.querySelectorAll('.card-value')[3].innerHTML = data.uptime + '<span class="card-unit">H</span>';
+                    document.getElementById('val-cpu').innerHTML = data.cpu + '<span class="card-unit">%</span>';
+                    document.getElementById('val-ram').innerHTML = data.ram + '<span class="card-unit">%</span>';
+                    document.getElementById('val-disk').innerHTML = data.disk + '<span class="card-unit">%</span>';
+                    document.getElementById('val-uptime').innerHTML = data.uptime + '<span class="card-unit">H</span>';
                 })
-                .catch(error => console.log("数据还没准备好，等包工头送过来..."));
+                .catch(error => console.log("数据拉取中..."));
         }
-        // 每 3000 毫秒（3秒）刷新一次
-        setInterval(updateStats, 3000); 
-        // 刚打开网页时立刻执行一次
+        setInterval(updateStats, 3000);
         updateStats();
+
+        // 2. 提交 Token 给 VPS 后台安装隧道
+        function submitToken() {
+            const token = document.getElementById('cf-token').value.trim();
+            const statusDiv = document.getElementById('tunnel-status');
+            const btn = document.getElementById('btn-tunnel');
+            
+            if(!token) { 
+                statusDiv.style.color = 'red'; statusDiv.innerText = '❌ 房主，Token 不能为空啊！'; return; 
+            }
+            
+            btn.innerText = '施工中 (约需15秒)...';
+            btn.classList.add('disabled');
+            statusDiv.style.color = '#000';
+            statusDiv.innerText = '👷 包工头正在后台安装 Cloudflare 隧道，请稍候...';
+            
+            fetch('http://' + window.location.hostname + ':9001/api/tunnel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: token })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    statusDiv.style.color = 'green';
+                    statusDiv.innerText = '🎉 隧道已打通！请去 CF 后台设置 Public Hostname (指向 localhost:你设置的端口)。';
+                    btn.innerText = '✅ 施工完成';
+                }
+            })
+            .catch(error => {
+                statusDiv.style.color = 'red';
+                statusDiv.innerText = '❌ 连接后台接收器失败，请检查 9001 端口防火墙。';
+                btn.innerText = '⚡ 重试';
+                btn.classList.remove('disabled');
+            });
+        }
     </script>
-</body>
-</html>
 </body>
 </html>
