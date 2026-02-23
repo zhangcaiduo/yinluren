@@ -86,15 +86,27 @@ EOF
 sudo systemctl restart cloudflared [cite: 67]
 echo -e "${GREEN}✅ 隧道已指向 https://$PANEL_DOMAIN${NC}"
 
-# --- 第四步：面板家具进场 (Docker 容器) ---
+# --- 第四步：面板家具进场 (Docker 容器 + 你的 index.html) ---
 echo -e "\n${BLUE}[4/4] 正在搬运“包工头管理面板”家具...${NC}"
-# 这里拉取你未来的 Docker 镜像 [cite: 417, 418]
-# 目前先用一个简单的 nginx 占位，之后换成 zhangcaiduo/vps-panel:latest
-docker run -d --name vps_panel -p 127.0.0.1:9000:80 nginx:alpine [cite: 182]
+
+# 1. 创建面板存放目录
+mkdir -p /root/yinluren_panel
+
+# 2. 从你的仓库下载最新的 index.html [cite: 5, 37]
+curl -L https://raw.githubusercontent.com/zhangcaiduo/yinluren/refs/heads/main/index.html -o /root/yinluren_panel/index.html
+
+# 3. 把你那张黑白线描图也下载下来 (假设文件名是 zhangcaiduo.png)
+# curl -L https://raw.githubusercontent.com/zhangcaiduo/yinluren/refs/heads/main/zhangcaiduo.png -o /root/yinluren_panel/zhangcaiduo.png
+
+# 4. 启动轻量级 Web 容器，并挂载你的网页文件 [cite: 101, 107]
+docker run -d --name vps_panel \
+  -p 127.0.0.1:9000:80 \
+  -v /root/yinluren_panel:/usr/share/nginx/html:ro \
+  --restart always \
+  nginx:alpine
 
 echo -e "\n${GREEN}===============================================================${NC}"
 echo -e "${CYAN}🎉 恭喜房主，引路人施工完毕！${NC}"
 echo -e "你的管理面板地址：${GREEN}https://$PANEL_DOMAIN${NC}"
-echo -e "初始用户名/密码：请查看你的网站指引"
 echo -e "${YELLOW}现在，你可以放心地关闭 SSH 窗口，去网页端继续装修了。${NC}"
 echo -e "${GREEN}===============================================================${NC}"
