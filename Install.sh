@@ -20,7 +20,6 @@ PANEL_PORT=${PANEL_PORT:-9000}
 
 read -p "2. 设置安全暗道后缀 (例如 caiduo, 默认 mypanel): " SECRET_PATH
 SECRET_PATH=${SECRET_PATH:-mypanel}
-# 过滤掉用户可能输入的斜杠
 SECRET_PATH=$(echo $SECRET_PATH | tr -d '/')
 
 read -p "3. 设置登录账号 (默认 admin): " PANEL_USER
@@ -42,18 +41,20 @@ fi
 docker rm -f vps_panel 2>/dev/null
 rm -rf /root/yinluren_panel
 mkdir -p /root/yinluren_panel/html/$SECRET_PATH
+mkdir -p /root/yinluren_panel/conf
 
 # 2. 生成密码文件 (htpasswd)
-# 使用 Python 3 快速生成 Nginx 认可的密码哈希
-HTHASH=$(python3 -c "import crypt; print(crypt.crypt('${PANEL_PASS}', crypt.mksalt(crypt.METHOD_SHA512)))")
-echo "${PANEL_USER}:${HTHASH}" > /root/yinluren_panel/.htpasswd
+# 这里用最兼容的 openssl 生成密码
+apt-get install -y openssl >/dev/null 2>&1
+HTHASH=$(openssl passwd -5 "$PANEL_PASS")
+echo "${PANEL_USER}:${HTHASH}" > /root/yinluren_panel/conf/.htpasswd
 
 # 3. 编写 Nginx 路由规则
-cat <<EOF > /root/yinluren_panel/default.conf
+cat <<EOF > /root/yinluren_panel/conf/default.conf
 server {
     listen 80;
     
-    # 大门：伪装成 404 或者空白
+    # 大门：伪装成 404
     location / {
         root /usr/share/nginx/html;
         index fake.html;
@@ -62,35 +63,28 @@ server {
     # 暗道：你的真实面板
     location /$SECRET_PATH/ {
         alias /usr/share/nginx/html/$SECRET_PATH/;
-        auth_basic "VPS 包工头 - 闲人免进";
-        auth_basic_user_file /etc/nginx/.htpasswd;
+        auth_basic "VPS Supervisor - Restricted Area";
+        auth_basic_user_file /etc/nginx/conf/.htpasswd;
         index index.html;
     }
 }
 EOF
 
 # --- 第四步：搬运家具 ---
-# 1. 伪装页
 echo "<h1>404 Not Found - 闲人免进</h1>" > /root/yinluren_panel/html/fake.html
-
-# 2. 真实面板 (下载你的 index.html 到暗道里)
 curl -fsSL https://raw.githubusercontent.com/zhangcaiduo/yinluren/refs/heads/main/index.html -o /root/yinluren_panel/html/$SECRET_PATH/index.html
 
 # --- 第五步：启动安保系统 ---
 docker run -d --name vps_panel \
   -p $PANEL_PORT:80 \
   -v /root/yinluren_panel/html:/usr/share/nginx/html:ro \
-  -v /root/yinluren_panel/default.conf:/etc/nginx/conf.d/default.conf:ro \
-  -v /root/yinluren_panel/.htpasswd:/etc/nginx/.htpasswd:ro \
+  -v /root/yinluren_panel/conf/default.conf:/etc/nginx/conf.d/default.conf:ro \
+  -v /root/yinluren_panel/conf/.htpasswd:/etc/nginx/conf/.htpasswd:ro \
   --restart always \
   nginx:alpine >/dev/null 2>&1
 
-# 拆除系统防火墙拦截
+# 仅关闭 UFW，不破坏 Docker 路由
 ufw disable >/dev/null 2>&1
-iptables -F
-iptables -P INPUT ACCEPT
-iptables -P FORWARD ACCEPT
-iptables -P OUTPUT ACCEPT
 
 # 获取本机公网 IP
 IP=$(curl -s4 icanhazip.com)
