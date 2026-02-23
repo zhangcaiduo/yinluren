@@ -153,6 +153,26 @@
     <footer>
         © 2026 VPS 包工头 - 你的数字领地精装修服务商
     </footer>
-
+<script>
+        function updateStats() {
+            // 去同级目录下寻找 data.json 文件
+            fetch('data.json')
+                .then(response => response.json())
+                .then(data => {
+                    // 把拿到的数据填进对应的卡片里
+                    document.querySelectorAll('.card-value')[0].innerHTML = data.cpu + '<span class="card-unit">%</span>';
+                    document.querySelectorAll('.card-value')[1].innerHTML = data.ram + '<span class="card-unit">%</span>';
+                    document.querySelectorAll('.card-value')[2].innerHTML = data.disk + '<span class="card-unit">%</span>';
+                    document.querySelectorAll('.card-value')[3].innerHTML = data.uptime + '<span class="card-unit">H</span>';
+                })
+                .catch(error => console.log("数据还没准备好，等包工头送过来..."));
+        }
+        // 每 3000 毫秒（3秒）刷新一次
+        setInterval(updateStats, 3000); 
+        // 刚打开网页时立刻执行一次
+        updateStats();
+    </script>
+</body>
+</html>
 </body>
 </html>
