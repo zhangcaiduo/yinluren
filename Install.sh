@@ -8,7 +8,7 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 clear
-echo -e "${GREEN}============ VPS 包工头 · 引路人 v2.0 (全栈旗舰版) ===========${NC}"
+echo -e "${GREEN}============ VPS 包工头 · 引路人 v2.1 (透明施工版) ===========${NC}"
 echo -e "${BLUE}功能：x-ui级安全门禁 + 实时面板监控 + 网页一键部署隧道${NC}"
 echo -e "${GREEN}===============================================================${NC}"
 
@@ -27,16 +27,25 @@ PANEL_USER=${PANEL_USER:-admin}
 read -p "4. 登录密码 (默认 123456): " PANEL_PASS
 PANEL_PASS=${PANEL_PASS:-123456}
 
-# --- 2. 打地基 ---
-echo -e "\n${BLUE}正在安装基础环境，请稍候...${NC}"
-apt-get update -qq && apt-get install -y -qq python3 openssl curl wget >/dev/null 2>&1
+# --- 2. 打地基 (取消静音，展示施工过程) ---
+echo -e "\n${BLUE}===============================================================${NC}"
+echo -e "${CYAN}👷 包工头开始施工：正在更新系统软件源...${NC}"
+apt-get update
 
+echo -e "\n${CYAN}👷 包工头开始施工：正在安装必备工具 (Python3, OpenSSL等)...${NC}"
+apt-get install -y python3 openssl curl wget
+
+echo -e "\n${CYAN}👷 包工头开始施工：正在检查 Docker 地基...${NC}"
 if ! command -v docker &> /dev/null; then
-    curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh >/dev/null 2>&1
+    curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh
     systemctl start docker && systemctl enable docker
+else
+    echo -e "${GREEN}✅ Docker 环境已存在，无需重复安装。${NC}"
 fi
+echo -e "${BLUE}===============================================================${NC}\n"
 
 # --- 3. 部署面板与防盗门 ---
+echo -e "${YELLOW}正在配置暗道与密码锁...${NC}"
 docker rm -f vps_panel 2>/dev/null
 pkill -f monitor.sh 2>/dev/null
 pkill -f api_server.py 2>/dev/null
@@ -63,7 +72,8 @@ EOF
 echo "<h1>404 Not Found - 闲人免进</h1>" > /root/yinluren_panel/html/fake.html
 curl -fsSL https://raw.githubusercontent.com/zhangcaiduo/yinluren/refs/heads/main/index.html -o /root/yinluren_panel/html/$SECRET_PATH/index.html
 
-# --- 4. 部署“监工” (每3秒写一次数据) ---
+# --- 4. 部署“监工” ---
+echo -e "${YELLOW}正在安排数据监工...${NC}"
 cat << 'EOF' > /root/yinluren_panel/monitor.sh
 #!/bin/bash
 DIR=$1
@@ -79,7 +89,8 @@ EOF
 chmod +x /root/yinluren_panel/monitor.sh
 nohup /root/yinluren_panel/monitor.sh "/root/yinluren_panel/html/$SECRET_PATH" >/dev/null 2>&1 &
 
-# --- 5. 部署“施工队API” (接收网页Token) ---
+# --- 5. 部署“施工队API” ---
+echo -e "${YELLOW}正在启动隧道接收器...${NC}"
 cat << 'EOF' > /root/yinluren_panel/api_server.py
 import http.server, socketserver, json, subprocess
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -101,9 +112,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 with socketserver.TCPServer(("", 9001), Handler) as httpd:
     httpd.serve_forever()
 EOF
-nohup python3 /root/yinluren_panel/api_server.py >/dev/null 2>&1 &
+# 将日志输出到文件，防止启动失败我们不知道原因
+nohup python3 /root/yinluren_panel/api_server.py > /root/yinluren_panel/api.log 2>&1 &
 
 # --- 6. 启动展厅与放行大门 ---
+echo -e "${YELLOW}正在摆放家具并开启大门...${NC}"
 docker run -d --name vps_panel -p $PANEL_PORT:80 -v /root/yinluren_panel/html:/usr/share/nginx/html:ro -v /root/yinluren_panel/conf/default.conf:/etc/nginx/conf.d/default.conf:ro -v /root/yinluren_panel/conf/.htpasswd:/etc/nginx/conf/.htpasswd:ro --restart always nginx:alpine >/dev/null 2>&1
 
 ufw disable >/dev/null 2>&1
